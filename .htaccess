@@ -1,0 +1,4 @@
+RewriteEngine on
+RewriteRule document-([0-9]*)-([0-9]*)\.png /barcode.php?event=barcode&type=$1&code=$2
+
+php_value memory_limit 250M

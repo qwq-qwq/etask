@@ -1,0 +1,165 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+	<title>e-tasks.bukva.ua: Граф выполнения заказа</title>
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	<script type="text/javascript" src="js/jquery-1.4.2.min.js"></script>
+	<script type="text/javascript" src="js/excanvas.js"></script>
+	<script type="text/javascript" src="js/rounded-corners-min.js"></script>
+	<script type="text/javascript" src="js/jquery.jsPlumb-1.0.4.mod.js"></script>
+	<script type="text/javascript">
+
+	$(document).ready(function(){
+		//Wait untill everything will be initialized before proceed
+		setTimeout(BuildGraph, 1000);
+		//jsPlumb initialization
+		jsPlumb.setDraggableByDefault( true );
+		jsPlumb.DEFAULT_PAINT_STYLE = { strokeStyle: 'gray', gradient:{ stops:[[0,'#225588'], [1,'#558822']] }, lineWidth: 1 };
+		jsPlumb.DEFAULT_ANCHORS = [ jsPlumb.Anchors.RightMiddle, jsPlumb.Anchors.LeftMiddle ];
+		jsPlumb.DEFAULT_ENDPOINT_STYLES = [{ fillStyle:'#225588' }, { fillStyle:'#558822' }]; 
+		jsPlumb.DEFAULT_ENDPOINT = new jsPlumb.Endpoints.Triangle({width:15, height:15});
+		jsPlumb.DEFAULT_CONNECTOR = new jsPlumb.Connectors.Bezier(50);
+		//jsPlumb.DEFAULT_CONNECTOR = new jsPlumb.Connectors.Straight();
+
+		var jsPlumbAnchorsRef = {
+			top		: jsPlumb.Anchors.TopCenter,
+			right	: jsPlumb.Anchors.RightMiddle,
+			bottom	: jsPlumb.Anchors.BottomCenter,
+			left	: jsPlumb.Anchors.LeftMiddle
+		}
+	});
+	//Main building function
+	function BuildGraph() {
+		//Build 1-st level tasks
+		task: for(var index in Graph_array) {
+			if (!Graph_array.hasOwnProperty(index)) continue;
+			for(var i in Graph_array) {
+				if (!Graph_array.hasOwnProperty(i)) continue;
+				if (Graph_array[i]['tmpChildID'] == Graph_array[index]['tmpID']) continue task;
+			}
+			AddTask(Graph_array[index], '#container');	
+		};
+		//Recursively build children
+		var depth = 0;
+		while ($('.empty').length > 0 && depth++ < 100) {//Protect from overlap
+			$('.empty').each(function(index, elem){
+				for(var i in Graph_array) {//Seek corresponding child
+					if (!Graph_array.hasOwnProperty(i)) continue;
+					if (Graph_array[i]['tmpID'] == $(elem).attr('rel')) {//Found? Add it.
+						AddTask(Graph_array[i], elem);
+						$(elem).removeClass('empty');
+					}
+				}
+			});
+		}
+		//Hide start points
+		$('canvas._jsPlumb_endpoint').filter(':even').hide();
+		//Round corners
+		rocon.update(document.getElementById('task_' + Graph_array[0]['tmpID']));
+		//Position artifical task
+		$('#cc_node').css('top', ($('#container')[0].offsetHeight - $('#cc_node')[0].offsetHeight)/2 + 'px');
+		//Redraw connectors
+		jsPlumb.repaintEverything();
+	}
+	//task building function
+	function AddTask(task, append_to) {
+		//If any previous task has built this node just connect to it
+		var div = $("#task_" + task['tmpID']);
+		if (div.length == 0) {
+			//Create task div
+			div = jQuery("<div>", {
+				class: 'task rc15',
+		    	id: "task_" + task['tmpID']
+			});
+			$(div).appendTo(append_to);
+			//Department name as header
+			var h4 = jQuery('<h4>');
+			$(h4).appendTo(div);
+			$(h4).html(task['visual_department_name']);
+			//Task type
+			var p = jQuery('<p>');
+			$(p).appendTo(div);
+			$(p).html(task['visual_type']);
+			//If it's collection - show goods
+			if ($.inArray(task['intType'].toString(), ["30", "40"]) > -1) {
+				var ul = jQuery('<ol>');
+				$(ul).appendTo(div);
+				var ul_html = '';
+				for(var i in task['articles']) {
+					if (!task['articles'].hasOwnProperty(i)) continue;
+					ul_html = ul_html + '<li>' + task['articles'][i]['varArticleName'] + ' (' + task['articles'][i]['intDemandQty'] + ' шт.)</li>';
+				}
+				$(ul).html(ul_html);
+			}
+			//Task time
+			var p = jQuery('<p>', {class:'task_time'});
+			$(p).appendTo(div);
+			$(p).html('с ' + task['visual_start_date'] + '<br />по ' + task['visual_end_date']);
+			//Build container for it's child if it has one.
+			if (task['tmpChildID'] > 0) {
+				jQuery("<div>", {
+					class: 'tasks-box empty',
+					rel: task['tmpChildID'],
+			    	id: "childs_of_" + task['tmpID']
+				}).appendTo(div.parent());
+			} 
+			//Position children relatively
+			c_divs = $('.tasks-box[rel=' + task['tmpChildID'] + ']');
+			var child_div = c_divs.eq(0);
+			if (child_div.length == 1){
+				//move to Left of last parent
+				var cur_offset = $(div).offset();
+				var child_offset = $(child_div).offset();
+				var rel_left = cur_offset.left - child_offset.left + div[0].offsetWidth + 20 + parseFloat($(child_div).css('left'));
+				$(child_div).css('left', rel_left + 'px');
+				//Center vertically if it has many parents
+				if (c_divs.length > 1) {
+					$(child_div).css('top', ($('#container')[0].offsetHeight - child_div[0].offsetHeight)/2 + 'px');
+				}
+			}
+		}
+		//Connect current parent to task node
+		if (typeof(append_to) != 'string') {//Regular node
+			$(append_to).prev().plumb({target:div[0].id});
+		} else {//Connect 1-st level node and artifical current task
+			$('#cc_node').plumb({target:div[0].id});
+		}
+	}
+	
+	</script>
+	<style type="text/css">	
+		._jsPlumb_connector { z-index:100; }
+		.rocon { z-index:10; }
+	
+		.tasks-box { 
+			float:left;
+			position:relative;
+		}
+		.task_time {
+			color:#22D;
+		}
+		.task h4 { margin:0; padding-bottom:.5em; }
+		.task { 
+			width:160px;
+			position:relative; 
+			border:1px solid #225588;
+			background:white;
+			padding:10px; 
+			margin:20px;
+			font-size:0.8em;
+			float:left; 
+			clear:left;
+			z-index:10;
+		}
+		.task ol{
+			padding-left:15px;
+		}
+	</style>
+</head>
+<body>
+	<div class="tasks-box">
+		<div id="cc_node" class="task rc15" style="background-color:#CCC;width:122px;"><h4>Ваша текущая задача<h4>КЦ: алгоритм выполнения заказа</div>
+	</div>
+	<div id="container" style="position:absolute;top:0;left:172px;width:100%"></div>
+</body>
+</html>
