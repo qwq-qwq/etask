@@ -10,7 +10,7 @@
 <table align="center" width="800" border="1" bordercolor="black" cellpadding="0" cellspacing="0">
     <tr>
        <td>
-            <p align="left"><img src="<?=PROJECT_URL?>document-39-<?=$order['Ord_id']?>.png" /></td></p>
+            <p align="center"><img src="<?=PROJECT_URL?>document-39-<?=$order['Ord_id']?>.png" /></td></p>
         </td>
     </tr>
     <tr>

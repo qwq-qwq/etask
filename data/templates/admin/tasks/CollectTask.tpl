@@ -61,6 +61,14 @@
 		$('#event').val('setExecutor');
 		$('#orderForm').submit();
 	}
+    function makeReserve() {
+        $('#event').val('makeReserve');
+        $('#orderForm').submit();
+    }
+    function removeReserve() {
+        $('#event').val('removeReserve');
+        $('#orderForm').submit();
+    }
 	$(document).ready(function () {
 		$.post("ajax.php", { "event" : "GetPDFDocs",
 							"intTaskType" : "{/literal}{$task.intType}{literal}",
@@ -91,6 +99,9 @@
 	{if $mode!='1' && $task.intState == '2'}<div style="color:red">Вы не можете обрабатывать эту задачу. Задачу выполняет {$exec_user}</div>{/if}
 	<input type="button" name="btnSetExecutor" {if $mode!='1' || $task.intState!='1'}style="font-size: 25px;" disabled{else}style="font-size: 25px; color: red;"{/if} onclick="getToExecute()" value="Взять в работу" />
 	<input type="button" name="btnPerformed" {if $mode!='1' || $task.intState!='2'}style="font-size: 25px;" disabled{else}style="font-size: 25px; color: red;"{/if} onclick="test()" value="Выполнено" />
+	{*<input type="button" name="btnMakeReserve" {if $this->order_data["Contact_mail"] == "qwq.z.qwq@gmail.com"}style="font-size: 25px;" disabled{else}style="font-size: 25px; color: red;"{/if} onclick="makeReserve()" value="Зарезервировать" />*}
+	{*<input type="button" name="btnRemoveReserve" {if $this->order_data["Contact_mail"] == "qwq.z.qwq@gmail.com"}style="font-size: 25px;" disabled{else}style="font-size: 25px; color: red;"{/if} onclick="removeReserve()" value="Снять резерв" />*}
+
 	<input type="hidden" name="nedostach" id="nedostach" value="0">
 
 	<table width="100%" cellpadding="0" cellspacing="0" class="header" style="text-align: center;" id="tasksTable">

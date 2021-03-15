@@ -33,11 +33,12 @@
 	<TBODY>
 		<TR>
 			<TD WIDTH=35 HEIGHT=17 ALIGN=LEFT VALIGN=TOP><BR></TD>
-			<TD WIDTH=124 ALIGN=LEFT VALIGN=TOP><B><U><FONT SIZE=2>Постачальник</FONT></U></B></TD>
+			<TD WIDTH=124 ALIGN=LEFT VALIGN=TOP><B><U><FONT SIZE=2>Постачальник:</FONT></U></B></TD>
 			<TD COLSPAN=6 WIDTH=489 ALIGN=LEFT VALIGN=TOP><FONT SIZE=2><?php echo($pattern[$doc_id.'_COMPANY_NAME'])?></FONT></TD>
 			<TD WIDTH=127 ALIGN=LEFT VALIGN=TOP COLSPAN=2 ROWSPAN=6><?php
 				echo '<img src="'.PROJECT_URL.'document-39-'.$order['Ord_id'].'.png" />';
 			?></TD>
+
 		</TR>
 		<TR>
 			<TD HEIGHT=17 ALIGN=LEFT><BR></TD>
@@ -388,6 +389,7 @@
 			<TD ALIGN=LEFT><BR></TD>
 			<TD ALIGN=LEFT><BR></TD>
 
+		</TR>
 		<?php
 			endif;
 		?>
@@ -401,6 +403,9 @@
 			<TD ALIGN=LEFT><FONT SIZE=2><BR></FONT></TD>
 			<TD STYLE="border-top: 1px solid #000000" COLSPAN=2 ALIGN=CENTER><FONT SIZE=2><BR></FONT></TD>
 			<TD ALIGN=LEFT><FONT SIZE=2><BR></FONT></TD>
+
+ 
+            
 		</TR>
 		<?php if (isset($new_doc)): ?>
 			<TD HEIGHT=17 ALIGN=LEFT COLSPAN=4><BR></TD>
@@ -415,7 +420,19 @@
 
 				echo $date.'&nbsp;'.$arrMonth[$month].'&nbsp;'.$year.'&nbsp;р.';
 			?></FONT></TD>
+
 		<?php endif; ?>
+		
+		<TR>
+<!--                        <TD WIDTH=127 ALIGN=CENTER VALIGN=TOP COLSPAN=2>  -->
+                        <TD HEIGTH=100 WIDTH=150 ALIGN=RIGHT COLSPAN=20><BR><BR><BR><BR><BR><BR>
+			<?php				
+                                echo '<img src="'.PROJECT_URL.'document-39-'.$order['Ord_id'].'.png" />';
+                        	?>
+		
+		</TR>	
+
+		
 	</TBODY>
 </TABLE>
 <?if (!isset($new_doc)){?>

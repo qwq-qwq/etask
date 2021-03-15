@@ -32,7 +32,7 @@ $(document).ready(function(){
 				$("#pdf_documents").html(str).show();
 			}
 		}, "json");
-	var notDisabled = new Array("btnGraph", "btnCancelOrder", "btnAddComment","btnShowComment","btnAddAdminComment","btnAddProduct","btnPreorder",'btnRemainsOrder');
+	var notDisabled = new Array("btnGraph", "btnCancelOrder", "btnAddComment","btnShowComment","btnAddAdminComment","btnAddProduct","btnPreorder",'btnRemainsOrder', 'btnCreateWFPInvoice');
 	disableButton('orderForm', notDisabled);
 	{/literal}
 	{if $graph_built}
@@ -88,7 +88,17 @@ $(document).ready(function(){
         	<input type="button" name="saveOrder" id="saveOrder" value="Сохранить" />
         </li>
     </ul>
-    <div id="fragment-1">{include file="order/sales.tpl"}</div>
+    <div id="fragment-1">
+        {include file="order/sales.tpl"}
+        <input type="button" name="btnCreateWFPInvoice" id="btnCreateWFPInvoice" value="Создать инвойс" />
+        <input style="display:inline-block;" type="text" name="userEmail" id="userEmail" value="{$order.Contact_mail}" />
+        <div style="display:inline-block;">
+            <select name="invoiceMerchant" id="invoiceMerchant" form="orderForm">
+                <option selected value="bukva">Буква</option>
+                <option value="kmbooks">КМ-Букс</option>
+            </select>
+        </div>
+    </div>
     <div id="fragment-2">{include file="order/payment.tpl"}</div>
     <div id="fragment-3">{include file="order/contact.tpl"}</div>
 </div>

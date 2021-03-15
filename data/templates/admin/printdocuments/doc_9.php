@@ -46,8 +46,12 @@ table{
 		<TR>
 			<TD HEIGHT=24 ALIGN=LEFT><BR></TD>
 			<TD ALIGN=LEFT colspan="2" style="font-size:11pt;"><B><U>Коментар:</U></B></TD>
-			<TD ALIGN=LEFT colspan="8"><?=$transf['comment']?></TD>
 		</TR>
+		<TR>
+			<TD HEIGTH=24 ALIGN=LEFT><BR></TD>
+			<TD ALIGN=LEFT colspan="10"><?=$transf['comment']?></TD>
+		</TR>
+
 		<TR>
 			<TD HEIGHT=62 ALIGN=LEFT><BR></TD>
 			<TD ALIGN=LEFT><BR></TD>

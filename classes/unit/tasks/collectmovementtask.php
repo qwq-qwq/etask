@@ -6,7 +6,7 @@ class CollectMovementTask extends CollectTask {
 
 	protected $exec_time = 3600;
 
-	function onDoneTask() {
+    function onDoneTask() {
 		$nedostach = $this->page->getRequest()->getNumber('nedostach');
 		$code_wares = $this->page->getRequest()->Value('code_wares');
 		$qtys = $this->page->getRequest()->Value('Qty');
@@ -60,7 +60,6 @@ class CollectMovementTask extends CollectTask {
 				// разброликорать след. задачу
 				$this->tasksTable->unlockNextTask($this->task_data['intChildID']);
 			}
-
 			$this->page->getResponse()->redirect('index.php');
 		}
 	}

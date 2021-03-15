@@ -48,7 +48,7 @@ class CallcentreTask extends Task {
 	protected function getOrderGoods() {
 		$sales = $this->salesTable->GetByFields(array('Ord_id'=>$this->task_data['intOrderID']), null, false);
 		foreach ($sales as $k => $v) {
-			if (strtoupper($v['Discount_forbidden']) == 'YES') {
+			if (strtoupper($v['Discount_forbidden']) == 'YES' && !($this->order_data["Payment_type"] == 11 && $this->order_data["is_preorder"] == 0)) {
 				$sales[$k]['discount'] = 0;
 			} else {
 				$sales[$k]['discount'] = max($v['discount'], $this->order_data['discount']);
@@ -174,7 +174,7 @@ class CallcentreTask extends Task {
 		$this->ordersTable->update($data);
 		$this->order_data = $data;
 		$this->OnRecalcDiscount();
-		if($Delivery_type==1){
+		if ($Delivery_type==1) {
 			$task['intID'] = $this->task_data['intID'];
 			$task['intDeliveryService'] = $this->page->getRequest()->getNumber('intDeliveryService');
 			$this->page->tasksTable->update($task);
@@ -319,7 +319,69 @@ class CallcentreTask extends Task {
 				} else {
 					$article['discount'] = 0;
 				}
-				$total_sum += round(round($article['Price']*(1 - $article['discount']/100),1)*$article['Qty'], 2);
+                if ($this->order_data['Payment_type'] == 11 && $this->order_data['is_preorder'] == 0){
+                  if($this->order_data['Ord_date'] >= "2020-06-11" && $this->order_data['Ord_date'] < "2020-06-18") {
+                      $discount["client"] = 15;
+                      if ($article['discount'] < 15) {
+                          $article['discount'] = $discount["client"];
+                      };
+                  }
+                  if($this->order_data['Ord_date'] >= "2020-06-18" && $this->order_data['Ord_date'] < "2020-06-25") {
+                       $discount["client"] = 10;
+                      if ($article['discount'] < 10){
+                          $article['discount'] = $discount["client"];
+                      };
+                  };
+                  if($this->order_data['Ord_date'] >= "2020-06-25" && $this->order_data['Ord_date'] < "2020-07-30") {
+                        $discount["client"] = 7;
+                        if ($article['discount'] < 7){
+                            $article['discount'] = $discount["client"];
+                        };
+                  };
+                  if($this->order_data['Ord_date'] >= "2020-07-30" && $this->order_data['Ord_date'] < "2020-10-26") {
+                        $discount["client"] = 10;
+                        if ($article['discount'] < 10){
+                            $article['discount'] = $discount["client"];
+                        };
+                  };
+                  if($this->order_data['Ord_date'] >= "2020-10-27" && $this->order_data['Ord_date'] < "2020-12-16") {
+                        $discount["client"] = 8;
+                        if ($article['discount'] < 8){
+                            $article['discount'] = $discount["client"];
+                        };
+                  };
+                    if($this->order_data['Ord_date'] >= "2020-12-17" && $this->order_data['Ord_date'] < "2020-12-21") {
+                        $discount["client"] = 15;
+                        if ($article['discount'] < 15){
+                            $article['discount'] = $discount["client"];
+                        };
+                    };
+                  if($this->order_data['Ord_date'] >= "2020-12-21") {
+                        $discount["client"] = 8;
+                        if ($article['discount'] < 8){
+                            $article['discount'] = $discount["client"];
+                        };
+                  };
+
+                  if($this->order_data['Ord_date'] >= "2021-03-05") {
+                        $discount["client"] = 10;
+                        if ($article['discount'] < 10){
+                            $article['discount'] = $discount["client"];
+                        };
+                  };
+
+
+
+
+
+
+
+
+                }
+                if ($this->order_data['Payment_type'] != 11 && ($article['discount'] == 15 || $article['discount'] == 10 || $article['discount'] == 8 || $article['discount'] == 7)) {//try to cancel discount
+                    $article['discount'] = 0;
+                }
+                $total_sum += round(round($article['Price']*(1 - $article['discount']/100),1)*$article['Qty'], 2);
 			}
 			//Caclulate update values
 			unset($discount['club']);
@@ -335,13 +397,16 @@ class CallcentreTask extends Task {
 				//$data['Overcost'] = 0;
 				//$data['Deliv_correction'] = 0;
 			} else {
-				if ($this->order_data['Delivery_type'] == 4) {//Postal delivery
-					$price = $this->CalcUkrPostPrice($total_sum);
+				if ($this->order_data['Delivery_type'] == 4) {//UkrPostal delivery
+					$price = 0;//$this->CalcUkrPostPrice($total_sum);
 				} elseif ($this->order_data['Delivery_type'] == 1) {//Courier delivery
-					$price = $this->CommonModel->GetDataTable('courier_price');
+					$price = $this->CalcCourierPrice($total_sum);
 				} elseif ($this->order_data['Delivery_type'] == 5) {//NewPost delivery
-					$price = $this->CommonModel->GetDataTable('new_post_price');
-				}
+//                    $price = $this->CommonModel->GetDataTable('new_post_price');
+                    			$price = $this->CalcNewPostPrice($total_sum);
+				} elseif ($this->order_data['Delivery_type'] == 6) {//UkrPostal Courier delivery
+                    $price = 0;
+                }
 			}
 			$price += $this->order_data['Logistic_correction'];
 			if ($price == 0) {
@@ -357,7 +422,35 @@ class CallcentreTask extends Task {
 		}
 	}
 
-	private function CalcUkrPostPrice($Price){ // расчет стоимости доставки
+    private function CalcCourierPrice($Price){
+        if ($Price >= 500.00) {
+            $Summ = 0;
+        } else {
+            $Summ = $this->CommonModel->GetDataTable('courier_price');
+        };
+        return $Summ;
+    }
+
+    private function CalcNewPostPrice($Price){
+        if ($Price >= 500.00) {
+            $Summ = 0;
+        } else {
+            $Summ = $this->CommonModel->GetDataTable('new_post_price');
+        };
+        return $Summ;
+    }
+
+
+    private function CalcUkrPostCourierPrice($Price){
+        if ($Price >= 1000.00) {
+            $Summ = 0;
+        } else {
+            $Summ = 35;
+        };
+        return $Summ;
+    }
+
+    private function CalcUkrPostPrice($Price){ // расчет стоимости доставки
 		$W = 200;
 		$quant = 0;
 		foreach ($this->getOrderGoods() as $article){
@@ -371,9 +464,12 @@ class CallcentreTask extends Task {
 			$Q = ($Q < 2.5) ? 2.5*1.2 : $Q*1.2;
 			$Summ = round($W + $Q, 2);
 			$Summ = ceil($Summ);*/
-	/*  $Summ = 30;  */
-		$Summ = 0;
-
+		    if ($Price >= 200.00) {
+		        $Summ = 0.00;
+		    } else {
+		        $Summ = 30.00;
+		    };
+//            $Summ = 0;
 		}else{//Other country
 			/*$exch_rate = $this->CommonModel->GetDataTable('USD/UAH');
 			$Price = $Price/$exch_rate;
@@ -487,7 +583,7 @@ class CallcentreTask extends Task {
 	 */
 	function OnPerformed() {
 		//  нельзя выполнить задачу КЦ если не заполнено время доставки для курьерского заказа
-		if($this->order_data['Delivery_type']==1 && (empty($this->order_data['Delivery_date_from']) || $this->order_data['Delivery_date_from']=='0000-00-00 00:00:00')) {
+		if ($this->order_data['Delivery_type']==1 && (empty($this->order_data['Delivery_date_from']) || $this->order_data['Delivery_date_from']=='0000-00-00 00:00:00')) {
 			$this->page->addErrorMessage('Нельзя выполнить задачу КЦ если не заполнено время доставки для курьерского заказа');
 			$this->page->getResponse()->redirect('task.php?ID='.$this->task_data['intID']);
 			return false;
@@ -500,7 +596,7 @@ class CallcentreTask extends Task {
 			if ($task['intID'] == 0) {//Save task data into DB
 				if ($this->order_data['Delivery_type']==1 and empty($this->task_data['intDeliveryService'])) {
 					$task['intDeliveryService'] = 10;
-				}elseif($this->order_data['Delivery_type']==1){
+				}elseif ($this->order_data['Delivery_type']==1){
 					$task['intDeliveryService'] = $this->task_data['intDeliveryService'];
 				}
 				if($task['intDeliveryService'] == 10 and ($task['intType']==150 or $task['intType']==135)){
@@ -731,12 +827,92 @@ class CallcentreTask extends Task {
 		}
 	}
 
+    function onCreateWFPInvoice() {
+        $goodsNames = "";
+        $goodsCounts = "";
+        $goodsPrices = "";
+        $goodsNamesArray = array();
+        $goodsCountsArray = array();
+        $goodsPricesArray = array();
+        $goods = $this->getOrderGoods();
+        foreach($goods as $row){
+            $strGoodName = str_replace("'", "", $row['Name']);
+            $goodsNames .= $strGoodName.";";
+            $goodsCounts .= $row['Qty'].";";
+            $goodsPrices .= floatval($row['Price']).";";
+
+            $goodsNamesArray[] = $strGoodName;
+            $goodsCountsArray[] = intval($row['Qty']);
+            $goodsPricesArray[] = floatval($row['Price']);
+        };
+        $goodsPrices = substr($goodsPrices, 0, strlen($goodsPrices)-1); //remove last semicolon
+        $orderSum = floatval($this->order_data['Cost'] + $this->order_data['Overcost']);
+        $orderTime = strtotime(strval($this->order_data['Ord_date']));
+        $orderHash = mt_rand(1,1000);
+        $invoiceMerchant = $this->page->getRequest()->GetString('invoiceMerchant');
+        $merchantName = "";
+        $domainName = "";
+        if ($invoiceMerchant == "bukva") {
+            $keyString = "6f2e0d6903d22c185596a6b4eb9990d01f39d6f5";
+            $merchantName = "bukva_ua";
+            $domainName = "bukva.ua";
+        }else if ($invoiceMerchant == "kmbooks"){
+            $keyString = "19ca665d8f72e4aeb67418c23a840735c16b2c11";
+            $merchantName = "kmbooks_com_ua1";
+            $domainName = "kmbooks.com.ua";
+        }
+        $orderReference = strval($this->order_data['Ord_id']) . "-" .  strval($orderHash);
+        $string = $merchantName . ";" . $domainName . ";" . strval($this->order_data['Ord_id']) . "-" .  strval($orderHash) . ";" . $orderTime . ";" . $orderSum . ";UAH;" . $goodsNames . $goodsCounts . $goodsPrices;
+        $orderSignature = hash_hmac("md5", $string, $keyString);
+        $data = array(
+            "transactionType" => "CREATE_INVOICE",
+            "merchantAccount" => $merchantName,
+            "merchantAuthType" => "SimpleSignature",
+            "merchantDomainName" => $domainName,
+            "merchantSignature" => $orderSignature,
+            "merchantTransactionType" => "AUTH",
+            "apiVersion" => 1,
+            "language" => "ua",
+            "serviceUrl" => "http://serviceurl.com",
+            "orderReference" => $orderReference,
+            "orderDate" => $orderTime,
+            "amount" => $orderSum,
+            "currency" => "UAH",
+            "orderTimeout" => 604800,
+            "productName" => $goodsNamesArray,
+            "productPrice" => $goodsPricesArray,
+            "productCount" => $goodsCountsArray,
+            "paymentSystems" => "",
+            "clientFirstName" => $this->order_data['Contact_name'],
+            "clientLastName" => $this->order_data['Contact_name'],
+            "clientEmail" => $this->page->getRequest()->GetString('userEmail'),
+            "clientPhone" => $this->order_data['Contact_phone']
+        );
+
+        $options = array(
+            'http' => array(
+                'method'  => 'POST',
+                'content' => json_encode( $data ),
+                'header'=>  "Content-Type: application/json\r\n" .
+                    "Accept: application/json\r\n"
+            )
+        );
+
+        $url = "https://api.wayforpay.com/api";
+        $context  = stream_context_create( $options );
+        $result = file_get_contents( $url, false, $context );
+        if ($result){
+            $response = json_decode( $result );
+            $invoiceLink = $response.invoiceUrl;
+        }
+
+    }
+
 	/**
 	 *
 	 * @see classes/unit/tasks/Task:render()
 	 */
 	function render() {
-		echo "test";
 		parent::render();
 		//$this->page->GetDocument()->addValue('accounts', $this->accountsTable->getByFields(array('validated' => 1), array('surname'=>'asc'), false));
 		$this->page->GetDocument()->addValue('accounts', $this->accountsTable->getByFields(array('validated' => 1, 'id' => $this->order_data['User_id']), array(), false));
@@ -1030,6 +1206,9 @@ class CallcentreTask extends Task {
 					$task_type = 115;
 					if (empty($asm_dep_id)) $asm_dep_id = $this->DepartmentsTable->getDepartmentBySprut($this->CommonModel->GetSetting('UKR_POST_pack_shop')); //Магелан киев
 					break;
+                case 6://UkrPostCourier
+                    $task_type = 120;
+                    break;
 			}
 
 			$final_packing = $this->CreateTask($task_type, $asm_dep_id, $all_articles);
@@ -1088,7 +1267,16 @@ class CallcentreTask extends Task {
 						}
 						if (empty($dep_id) and in_array($task_type, array(125,135))) $dep_id = DEPARTMENT_CURRIER_ID; //Магелан киев
 						break;
-						
+                    case 6://UkrPostCourier
+                        if ($asm_region == 'Киев') {
+                            $task_type = 140;
+                            $dep_id = DEPARTMENT_CURRIER_ID;
+                        } else {
+                            $task_type = 130;
+                            $dep_id = $asm_dep_id;
+                        }
+                        break;
+
 				}
 				$delivery = $this->CreateTask($task_type, $dep_id, $all_articles);
 			}
@@ -1313,6 +1501,9 @@ class CallcentreTask extends Task {
 		}
 		//Detect our region
 		$region = $this->sprutModel->GetRegionByShop($asm_shop_id);
+		//if ($region != "Киев"){
+        $filter['REGION'] = "Киев";
+        //}
 		//Assemble in other shops
 		while (count($goods) > 0) {
 			$shops = $this->sprutModel->ListBestMatchedShops($goods, $filter);
@@ -1423,7 +1614,8 @@ class CallcentreTask extends Task {
 					}
 				}
 				$region = $this->sprutModel->GetRegionByShop($shop_id);
-				if ($region == $asm_region) $task_type = 50; else $task_type = 60;
+				if (($region == $asm_region) or $asm_region == 'Киев' ) $task_type = 50; 
+							    else $task_type = 60;
 				//Create packing task
 				$p_task = $this->CreateTask($task_type, $task['intDepartmentID'], $task['articles']);
 				$packing_tasks[$p_task['tmpID']] = $p_task;
@@ -1451,7 +1643,7 @@ class CallcentreTask extends Task {
 				//Check region and choose transfer type. And department
 				$dep_id = $task['intDepartmentID'];
 				if ($task['intType'] == 50) {
-					if ($asm_region == 'Киев') {
+					if (($asm_region == 'Киев') or  ($asm_region == 'Киев')) {
 						$task_type = 70;
 						$dep_id = DEPARTMENT_CURRIER_ID;
 					} else {

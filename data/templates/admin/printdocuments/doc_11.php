@@ -9,77 +9,77 @@
 <BODY>
 <table align="center" width="800" border="1" bordercolor="black" cellpadding="0" cellspacing="0">
     <tr>
-        <td width="250">
+        <td width="170">
             <p align="left"><font face="Verdana" size="2" size="2"><b>Дата замовлення:</b></font></p>
         </td>
-        <td width="400">
+        <td width="330">
             <p align="left"><font face="Verdana" size="2"><?=date('d.m.Y H:i', strtotime($order['Ord_date']))?></font></p>
         </td>
-        <td rowspan="5" width="190">
+        <td rowspan="5" width="300">
             <p align="center"><img src="<?=PROJECT_URL?>document-39-<?=$order['Ord_id']?>.png" /></td></p>
         </td>
     </tr>
 <tr>
-        <td width="250">
+        <td width="170">
             <p align="left"><font face="Verdana" size="2"><b>Клієнт:</b></font></p>
         </td>
-        <td width="400">
+        <td width="330">
             <p align="left"><font face="Verdana" size="2"><?=$order['Contact_name']?></font></p>
         </td>
 </tr>
 <tr>
-        <td width="250">
+        <td width="170">
             <p align="left"><font face="Verdana" size="2"><b>Email:</b></font></p>
         </td>
-        <td width="400">
+        <td width="330">
             <p align="left"><font face="Verdana" size="2"><?=$order['Contact_mail']?></font></p>
         </td>
 </tr>
 <tr>
-        <td width="250">
+        <td width="170">
             <p align="left"><font face="Verdana" size="2"><b>Телефон:</b></font></p>
         </td>
-        <td width="400">
+        <td width="330">
             <p align="left"><font face="Verdana" size="2"><?=$order['Contact_phone']?></font></p>
         </td>
 </tr>
 <tr>
-        <td width="250">
+        <td width="170">
             <p align="left"><font face="Verdana" size="2"><b>Адреса:</b></font></p>
         </td>
-        <td width="400">
+        <td width="330">
             <p align="left"><font face="Verdana" size="2"><?=$order['Contact_address']?></font></p>
         </td>
 </tr>
     <tr>
-        <td width="250">
+        <td width="170">
             <p align="left"><font face="Verdana" size="2"><b>Форма оплати:</b></font></p>
         </td>
-        <td colspan="2" width="550">
+        <td colspan="2" width="400">
             <p align="left"><font face="Verdana" size="2"><?=$paym_type['Name_UA']?></font></p>
         </td>
     </tr>
     <tr>
-        <td width="250">
+        <td width="170">
             <p align="left"><font face="Verdana" size="2"><b>Стан оплати:</b></font></p>
         </td>
-        <td colspan="2" width="550">
+        <td colspan="2" width=400"">
             <p align="left"><font face="Verdana" size="2"><?if ($order['Pay_state'] == 1) echo 'Сплачено';else echo 'Не сплачено';?></font></p>
         </td>
     </tr>
     <tr>
-        <td width="250">
+        <td width="170">
             <p align="left"><font face="Verdana" size="2"><b>Тип доставки:</b></font></p>
         </td>
-        <td colspan="2" width="550">
+        <td colspan="2" width="400">
             <p align="left"><font face="Verdana" size="2"><?=$deliv_type['Name_UA']?></font></p>
         </td>
     </tr>
     <tr>
-        <td width="250">
+        <td width="170">
             <p align="left"><font face="Verdana" size="2"><b>Магазин комплектації:</b></font></p>
         </td>
-        <td colspan="2" width="550">
+        <td colspan="2" width="400">
             <p align="left"><font face="Verdana" size="2"><?=$shop_name?></font></p>
         </td>
     </tr>

@@ -13,7 +13,7 @@
 	<script type="text/javascript" src="js/ui.datepicker.js"></script>
 	<script type="text/javascript" src="js/jquery.MultiFile.js"></script>
 	<script type="text/javascript" src="js/functions.js"></script>
-	<script type="text/javascript" src="js/order.js"></script>
+	<script type="text/javascript" src="js/order.js?123534"></script>
 </head>
 <body>
 <div align="center">

@@ -173,7 +173,7 @@ Class SprutModel extends OciDriver {
 		$SQL = 'Select CODE_WARES, sum(QTY) QTY, REGION
 				From '.DB_SPRUT_TABLE_STOCK.'
 				Group by CODE_WARES, REGION
-				ORDER BY QTY DESC';
+				ORDER BY RANK_ESHOP DESC, QTY DESC';
 		$matches = $this->query($SQL);
 		print_r($matches[0]);
 	}
@@ -315,7 +315,7 @@ Class SprutModel extends OciDriver {
 
 				if ($res === FALSE){
 					$this->rollback_tran();
-					return -7;
+					return -71;
 				}
 			}
 		}
@@ -563,7 +563,7 @@ Class SprutModel extends OciDriver {
 					  );
 			if ($result === FALSE || $result > 0){
 				$this->rollback_tran();
-				return -7;
+				return $ord_code." ".-72;
 			}
 		}
 		$result = $this->query("Update MZ.ORDER_CLIENT Set DESCRIPTION = '$comment $ord_id' Where CODE_ORDER = $ord_code");
@@ -701,4 +701,33 @@ Class SprutModel extends OciDriver {
 
 		return $ret;
 	}
+
+    function RemoveReserve($Order_id) {
+        $SQL = "declare code_woi# integer;
+                Result integer;
+                S varchar2(4000 char); 
+                begin     
+                  for j in (select code_write_off_invoice  
+                            from mz.bukva_order_invoice 
+                           where code_order = ".$Order_id.") LOOP    
+                      MZ.SPR\$_WRITE_OFF_INVOICE.DELWARESWRITEOFFINVOICE(j.code_write_off_invoice, -1, -1);
+                      Result := MZ.DELETEWRITEOFF(j.code_write_off_invoice);
+                     delete from mz.bukva_order_invoice where code_order = ".$Order_id." ;    
+                   end Loop;
+                   commit;
+                   exception when others then
+                   S:= SQLERRM;       
+                   rollback;
+                   update mz.bukva_order_invoice boi
+                   set boi.ERR_MESSAGE = S, boi.ORDER_STATUS = 'ERR' 
+                   where code_order = ".$Order_id.";                  
+                end;";
+
+        $res = $this->sprutModel->query($SQL);
+        if ($res === FALSE){
+            die('ERROR! '.$SQL);
+        }
+        //echo "<br>" . $SQL;
+    }
+
 }

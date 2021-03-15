@@ -464,6 +464,12 @@ $(document).ready(function () {
 		var GWin = window.open('', 'Graph');
 		GWin.close();
 	});
+
+    $("#btnCreateWFPInvoice").click(function(){
+        $("#event").val('CreateWFPInvoice');
+        $("#orderForm").submit();
+    });
+
 	/**
 	 * On clicked button "Выполнено"
 	 */
